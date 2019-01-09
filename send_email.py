@@ -12,24 +12,12 @@ from email.header import Header
 import pandas
 
 file_path = conf.CSV_PATH
-# receivers = pandas.read_csv(file_path)
+receivers = list(pandas.read_csv(file_path)['email'])
 
 mail_host = conf.MAIL_HOST
 
 mail_user = conf.MAIL_USER
 mail_pwd = conf.MAIL_PWD
-
-# 403752075@qq.com
-# 401213141@qq.com
-# 876088005@qq.com
-# 2802405717@qq.com
-# 2729039055@qq.com
-# 2870506309@qq.com
-# 3027829815@qq.com
-# 2413711979@qq.com
-
-# receivers = ['403752075@qq.com','401213141@qq.com','876088005@qq.com','2802405717@qq.com']
-receivers = ['2101109566@qq.com']
 
 msg = MIMEMultipart('alternative')
 msg['From'] = mail_user
