@@ -11,36 +11,43 @@ from email import encoders
 from email.header import Header
 import pandas
 
-file_path = conf.CSV_PATH
-receivers = list(pandas.read_csv(file_path)['email'])
+file_path = conf.FILE_PATH
+# receivers = list(pandas.read_csv(file_path)['email'])
+
+f = open(file_path, "r")
+lines = f.readlines()
+receivers = []
+for line in lines:
+    line = line.replace('\n', '')
+    line = line.replace(' ', '')
+    receivers.append(line)
 
 mail_host = conf.MAIL_HOST
-
 mail_user = conf.MAIL_USER
 mail_pwd = conf.MAIL_PWD
 
 msg = MIMEMultipart('alternative')
 msg['From'] = mail_user
-
 msg['Subject'] = Header(conf.HEADERS, 'utf-8')
-body = MIMEText(conf.BODY)
-msg.attach(body)
+
+msg.attach(MIMEText('<html><body>' + conf.BODY + '</body></html>', 'html', 'utf-8'))
 
 image_path_list = conf.IMAGE_PATH_LIST
 
 if image_path_list:
 
     for image_path in image_path_list:
-
         image_index = image_path_list.index(image_path)
-        msg.attach(MIMEText('<html><body>' +
-                            '<p><img src="cid:0"></p>' +
-                            '</body></html>', 'html', 'utf-8'))
+        msg.attach(
+            MIMEText('<html><body>' + '<p><img src="cid:' + str(image_index) + '"></p>' + '</body></html>', 'html',
+                     'utf-8'))
+
+        image_name = conf.IMAGE_NAME_LIST[image_index]
         with open(image_path, 'rb') as f:
-            mm = MIMEBase('image', 'jpeg', filename=conf.IMAGE_NAME_LIST[image_index])
-            mm.add_header('Content-Disposition', 'attachment', filename='b.jpg')
-            mm.add_header('Content-ID', '<0>')
-            mm.add_header('X-Attachment-Id', '0')
+            mm = MIMEBase('image', image_name.split('.')[-1], filename=image_name)
+            mm.add_header('Content-Disposition', 'attachment', filename=image_name)
+            mm.add_header('Content-ID', '<%s>' % image_index)
+            mm.add_header('X-Attachment-Id', str(image_index))
             mm.set_payload(f.read())
             encoders.encode_base64(mm)
             msg.attach(mm)
